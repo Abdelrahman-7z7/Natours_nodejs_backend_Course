@@ -1,0 +1,166 @@
+const express = require('express');
+const morgan = require('morgan')
+
+const gloablErrorHandler = require('./controller/errorController')
+const AppError = require('./utils/appError')
+//CONFIG THE ROUTES
+const tourRouter = require('./routes/tourRoutes')
+const userRouter = require('./routes/userRoutes')
+
+const app = express();
+
+//1) MIDDLEWARES
+//check whether we are running in the development or in production 
+if(process.env.NODE_ENV.trim() === 'development'){
+    app.use(morgan('dev'))
+}
+
+// Middleware: a function that runs before the handler function. // so we need this for the request in the body 
+app.use(express.json());
+//accessing the overview.html and that can be done with the next line but in the URL we dont use the /public (express will sit it to the root "/" url) instead we use
+// 127.0.0.1:3000/overview.html
+app.use(express.static(`${__dirname}/public`))
+
+
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'Invalid JSON'
+        });
+    }
+    next();
+});
+
+//a middleware 
+// ##since we didnt specify any route that will be applied to all routes after this middleware (the place change a lot)
+// app.use((req,res,next)=>{
+//     console.log('Hello from the middleware ✌️')
+//     //without calling the next function it will stuck here since we are not sending any respond back
+//     next();
+// })
+
+//adding a middleware to know when the request has happened and this will be applied to the next routes only no the one create before this middleware got created
+app.use((req,res,next)=>{
+    req.requestTime = new Date().toISOString();
+    //this is how we know if the token where sent to the headers along with the URL
+    // console.log(req.headers)
+    next();
+})
+
+
+
+//TODO: 2) USER ROUTE HANDLER ==> moved to routes folder 
+
+
+// 3) ROUTES
+app.use('/api/v1/tours', tourRouter)
+app.use('/api/v1/users', userRouter)
+
+//HANDLES THAT NOT FOUND ROUTE ##MIDDLEWARE
+// all() == get, post, put etc...
+// * ==> stands for anything
+// why we use it in end of the file? because if we reached this point then all the urls above are not caught by any req
+app.all('*', (req,res,next)=>{
+    // res.status(404).json({
+    //     status: 'fail',
+    //     message: `Can't find ${req.originalUrl} on this server.`
+    // })
+
+    // const err = new Error(`Can't find ${req.originalUrl} on this server.`);
+    // err.status = 'fail';
+    // err.statusCode = 404;
+
+    //if next() received an argument express will always knows that there was an error and NOTHING ELSE BUT ERROR
+    //if we used the next and passed an argument all the middlewares in the between will be skipped and express will jump to the error handling middleware
+    next(new AppError(`Can't find ${req.originalUrl} on this server.`, 404) )    
+})
+
+//ERROR HANDLING MIDDLEWARE: by defining 4 parameters express knows that this is an error handling middleware
+app.use(gloablErrorHandler) 
+
+// 4) START THE SERVER
+module.exports = app;
+
+
+//API: Application Programming Interface: a piece of software that can be used by another piece of software, in order to allow applications to talk to each other.
+
+// But 'application' can be other things:
+/**
+ * 1- Node.js fs or http APIs("node APIs")
+ * 2- Browser's DOM Javascript API
+ * 3- wit object oriented programming, when exposing methods to the public, we are creating an API
+ * 
+ * ## REST (Representational States Transfer) architecture:
+ * is basically a way of building web APIs in a logical way, making them easy to consume 
+ * 
+ * the steps to be followed:
+ * 1- Separate API into logical resources:
+ * 
+ *  ## Resource: Object or representation of something, which has data 
+ *      associated to it. Any information that can be named can be a resource
+ *  ## ex: tours, users, reviews
+ * 
+ * 
+ * 2- expose structured, resource-based URLs:
+ *      ## ex: http://www.natours.com/addNewTour
+ *      ## and this called an API endpoint (/addNewTour)
+ *      ## endpoint: should contain only resources (nouns), and use HTTP methods for actions.
+ * 
+ * 3- use (http) methods (verbs): the API should use the right http method not the URL:
+ * 
+ *  1. /getTour ==> must be sent to the get http method and named as (/tours) only.
+ *  2. /addNewTour ==> must be sent to the post (used to create a new resource) http method and named as (/tours/id) only
+ *  3. /updateTour ==> must be sent to the put/patch (update an existing resource) http method and named as (/tours/id) only.
+ *                      put: the user must send the whole updated object
+ *                      patch: the user can send only the part that has been changed
+ *  4. /deleteTour ===> must be sent to the delete (delete an existing resource) http method and named as (/tours/id) only.
+ *  5. /getToursByUser ===> must be sent to the get http method and named as (/users/3/tours)
+ *  6. /deleteTourByUser ===> must be sent to the delete http method and named as (/users/3/tours/9)
+ * 
+ * 4- send the data as JSON (usually)
+ *      ## we might use JSend instead and it structured as this:
+ *       { "status": "success",
+ *          "data": { "
+*               "id": "5"
+ *               "name": "Eiffel Tower",
+ *               "duration": 30,
+ *               "price": 1000
+ *      }              
+ * 
+ * 5- must be stateless RESTful APIs:
+ *      All states is handled on the client. this means that each request must contain all the information necessary to process 
+ *      a certain request.
+ *      The server should not have to remember the previous requests.
+ *      ex: loggedIn, currentPage.
+ * 
+ * 
+ * 
+ * NOTE: CRUD operations, is the term that used to define the basic operations that user
+ *       can perform on the server (Create, Read, Update, Delete)
+ */
+
+/**
+ * ERROR HANDLING IN EXPRESS: overview
+ * 
+ * Types of error:
+ * 
+ * 1- operational error:
+ *      # problems that we can predict will happen at some point, so we just need to handle them in advanced
+ * 
+ *      1- invalid path accessed
+ *      2- invalid user input(validator error from mongoose)
+ *      3- failed to connect to server
+ *      4- failed to connect to the database
+ *      5- request timeout
+ *      6- etc...
+ *  
+ * 1- Programming error:
+ *      # bugs that we developers introduce into our code. Difficult to find and handle
+ * 
+ *      1- reading properties on undefined
+ *      2- passing a number when an object is expected
+ *      3- using await without sync
+ *      4- using req.query instead of req.body
+ *      5- etc... 
+ */
