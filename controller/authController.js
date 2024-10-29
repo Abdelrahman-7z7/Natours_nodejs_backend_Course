@@ -3,11 +3,9 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
-<<<<<<< HEAD
-=======
+
 const sendEmail = require('../utils/email')
 const crypto = require('crypto')
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 
 const signToken = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -15,8 +13,6 @@ const signToken = id => {
     });
 }
 
-<<<<<<< HEAD
-=======
 const createSendToken = (user, statusCode, res) => {
     const token = signToken(user._id);
 
@@ -29,8 +25,6 @@ const createSendToken = (user, statusCode, res) => {
     })
 }
 
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
-
 exports.signup = catchAsync(async(req, res, next) => {
     const newUser = await User.create({
         name: req.body.name,
@@ -41,7 +35,7 @@ exports.signup = catchAsync(async(req, res, next) => {
         role: req.body.role
     });
 
-<<<<<<< HEAD
+
     const token = signToken(newUser._id);
 
     res.status(201).json({
@@ -51,7 +45,6 @@ exports.signup = catchAsync(async(req, res, next) => {
             user: newUser
         }
     })
-=======
     createSendToken(newUser, 201, res);
     // const token = signToken(newUser._id);
 
@@ -62,7 +55,6 @@ exports.signup = catchAsync(async(req, res, next) => {
     //         user: newUser
     //     }
     // })
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 })
 
 exports.login = catchAsync(async(req,res,next) => {
@@ -83,26 +75,20 @@ exports.login = catchAsync(async(req,res,next) => {
     }
 
     // 3) if everything is ok, send token to client 
-<<<<<<< HEAD
     const token = signToken(user._id);
 
     res.status(200).json({
         status:'success',
         token
     })
-=======
     createSendToken(user, 200, res);
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 })
 
 
 //MIDDLEWARE function to protect our tours from being exposed when the jwt is not available (meaning no user is login)
 exports.protect = catchAsync( async(req, res, next)=>{
     // 1) Getting token and check if it is there
-<<<<<<< HEAD
-=======
     console.log('I am in ')
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     let token;
     //authorization('Bearer jwtToken)
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
@@ -111,7 +97,6 @@ exports.protect = catchAsync( async(req, res, next)=>{
     }
     //checking if the token is there
     // console.log(token)
-<<<<<<< HEAD
 
     if(!token){
         return next(new AppError('You are not logged in! Please login to get access!!', 401))
@@ -120,7 +105,6 @@ exports.protect = catchAsync( async(req, res, next)=>{
 
     // 2) verification token
 
-=======
     
     if(!token){
         return next(new AppError('You are not logged in! Please login to get access!!', 401))
@@ -129,16 +113,12 @@ exports.protect = catchAsync( async(req, res, next)=>{
     
     // 2) verification token
     
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     //we do not want to break the concept of promises so we will use promisify from util library
     //promisify() we made the function and then () called it at the same line 
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
     console.log(decoded);
-<<<<<<< HEAD
 
-=======
     
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     // 3) check if the user still exists
     //this is why we have the id in the payload
     const currentUser = await User.findById(decoded.id)
@@ -174,8 +154,7 @@ exports.restrictTo = (...roles) => {
 }
 
 
-<<<<<<< HEAD
-=======
+
 //resetting password where the user send a request to a post http request and then this will create a reset token that will be sent through email, (just a random token NOT a WebJsonToken) 
 
 exports.forgetPassword = catchAsync(async(req, res, next) => {
@@ -278,7 +257,6 @@ exports.updatePassword = catchAsync(async(req, res, next) => {
 });
 
 
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 /**
  * 200: OK
 201: Created

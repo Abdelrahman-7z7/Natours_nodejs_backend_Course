@@ -15,6 +15,24 @@ exports.getAllUsers = catchAsync( async(req, res)=>{
     })
 });
 
+//currant User update its own data
+exports.updateMe = catchAsync(async (req, res, next) => {
+    // 1) Create error if user POSTs(update) password data
+    if(req.body.password || req.body.passwordConfirm){
+        return next(new AppError('This route is not for password update, Please use /updateMyPassword', 400))
+    }
+
+    // 2) update user document
+
+    res.status(200).json({
+        status: 'success',
+        message: 'User updated successfully',
+        data: {
+            user: req.user
+        }
+    })
+})
+
 exports.createNewUser = (req, res)=>{
     res.status(500).json({
         status: 'fail',

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 const crypto = require('crypto')
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs')
@@ -38,14 +35,11 @@ const userSchema = new mongoose.Schema({
             message: 'passwords do not match'
         }
     },
-<<<<<<< HEAD
     passwordChangedAt: {
         type: Date,
         default: Date.now
     },
-=======
     passwordChangedAt: Date,
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     photo: {
         type: String,
         default: 'default.jpg'
@@ -54,13 +48,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'guide', 'lead-guide', 'admin'],
         default: 'user'
-<<<<<<< HEAD
-    }
-=======
+    
     },
     passwordResetToken: String,
     passwordResetExpires: Date
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 })
 
 // Middleware to hash password before saving
@@ -75,8 +66,7 @@ userSchema.pre('save', async function(next){
     next();
 })
 
-<<<<<<< HEAD
-=======
+
 //MIDDLEWARE TO reset the passwordChangedAt
 userSchema.pre('save', function(next){
     if(!this.isModified('password') || this.isNew) return next();
@@ -86,7 +76,6 @@ userSchema.pre('save', function(next){
     next()
 })
 
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 //Instance method
 userSchema.methods.correctPassword = async function(candidatePassword, userPassword){
     //since we have the password selected as false we cannot use the word "this.password" to get it so we need to pass it as a parameter
@@ -107,8 +96,7 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp){
     return false;
 }
 
-<<<<<<< HEAD
-=======
+
 userSchema.methods.createPasswordResetToken = function(){
     //the random token will be used as a password that only the user who will have access to in order to reset his password
     //and this cannot be saved as it is in the database cuz if the hacker had access to the DB he will just request that token in order to change the password for every email
@@ -125,7 +113,6 @@ userSchema.methods.createPasswordResetToken = function(){
     return resetToken;
 }
 
->>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 const User = mongoose.model('User', userSchema)
 
 module.exports = User;
