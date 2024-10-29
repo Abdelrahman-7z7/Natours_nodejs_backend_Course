@@ -3,6 +3,11 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync')
 const AppError = require('../utils/appError')
+<<<<<<< HEAD
+=======
+const sendEmail = require('../utils/email')
+const crypto = require('crypto')
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 
 const signToken = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -10,6 +15,21 @@ const signToken = id => {
     });
 }
 
+<<<<<<< HEAD
+=======
+const createSendToken = (user, statusCode, res) => {
+    const token = signToken(user._id);
+
+    res.status(statusCode).json({
+        status: 'success',
+        token, 
+        data: {
+            user
+        }
+    })
+}
+
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 
 exports.signup = catchAsync(async(req, res, next) => {
     const newUser = await User.create({
@@ -21,6 +41,7 @@ exports.signup = catchAsync(async(req, res, next) => {
         role: req.body.role
     });
 
+<<<<<<< HEAD
     const token = signToken(newUser._id);
 
     res.status(201).json({
@@ -30,6 +51,18 @@ exports.signup = catchAsync(async(req, res, next) => {
             user: newUser
         }
     })
+=======
+    createSendToken(newUser, 201, res);
+    // const token = signToken(newUser._id);
+
+    // res.status(201).json({
+    //     status: 'success',
+    //     token, 
+    //     data: {
+    //         user: newUser
+    //     }
+    // })
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 })
 
 exports.login = catchAsync(async(req,res,next) => {
@@ -50,18 +83,26 @@ exports.login = catchAsync(async(req,res,next) => {
     }
 
     // 3) if everything is ok, send token to client 
+<<<<<<< HEAD
     const token = signToken(user._id);
 
     res.status(200).json({
         status:'success',
         token
     })
+=======
+    createSendToken(user, 200, res);
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 })
 
 
 //MIDDLEWARE function to protect our tours from being exposed when the jwt is not available (meaning no user is login)
 exports.protect = catchAsync( async(req, res, next)=>{
     // 1) Getting token and check if it is there
+<<<<<<< HEAD
+=======
+    console.log('I am in ')
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     let token;
     //authorization('Bearer jwtToken)
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
@@ -70,6 +111,7 @@ exports.protect = catchAsync( async(req, res, next)=>{
     }
     //checking if the token is there
     // console.log(token)
+<<<<<<< HEAD
 
     if(!token){
         return next(new AppError('You are not logged in! Please login to get access!!', 401))
@@ -78,11 +120,25 @@ exports.protect = catchAsync( async(req, res, next)=>{
 
     // 2) verification token
 
+=======
+    
+    if(!token){
+        return next(new AppError('You are not logged in! Please login to get access!!', 401))
+    }
+    
+    
+    // 2) verification token
+    
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     //we do not want to break the concept of promises so we will use promisify from util library
     //promisify() we made the function and then () called it at the same line 
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
     console.log(decoded);
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
     // 3) check if the user still exists
     //this is why we have the id in the payload
     const currentUser = await User.findById(decoded.id)
@@ -118,6 +174,111 @@ exports.restrictTo = (...roles) => {
 }
 
 
+<<<<<<< HEAD
+=======
+//resetting password where the user send a request to a post http request and then this will create a reset token that will be sent through email, (just a random token NOT a WebJsonToken) 
+
+exports.forgetPassword = catchAsync(async(req, res, next) => {
+    // 1) Get user based on POSTed email
+    const user = await User.findOne({email: req.body.email})
+    // ## verify if the user does exist
+    if(!user){
+        return next(new AppError('There is no user with this email address', 404))
+    }
+
+    // 2) Generate the random reset token 
+    //## using an instance method for these lines since we will have a lot of work to be done so we need to follow the clean-code principle 
+    const resetToken = user.createPasswordResetToken();
+    //in the instance method we just modified the password but we did not save it
+    //we use this validateBeforeSave: false, so all the validator in our schema will be sit to false where we can only send the email to the schema
+    await user.save({validateBeforeSave: false});
+
+    // 3) send it to the user's email
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+
+    const message = `Forgot Your Password? Submit a patch request with your new password and password confirm to: ${resetURL}.\nIf you didn't forgot your password, please ignore this email`;
+
+    try{
+
+        await sendEmail({
+            email: req.body.email,
+            subject: 'Your password reset token (valid for 10 mint)',
+            //message: message ==> is basically message
+            message
+        })
+    
+        res.status(200).json({
+            status: 'success',
+            message: 'Token Sent to Email'
+        })
+    }catch(err){
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({validateBeforeSave: false});
+
+        return next(new AppError('There was an error sending the email. Try again later!', 500))
+    }
+})
+
+exports.resetPassword =catchAsync(async(req, res, next) =>{
+    // 1) Get user based on the token
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex')
+
+    // ## we are finding the user by the token and checking the time expiration for it at the same time
+    const user = await User.findOne({
+        passwordResetToken: hashedToken, 
+        passwordResetExpires: {$gt: Date.now()}
+    });
+
+    // 2) if token has not expired, and there is user, set the new password
+    // ## since if either the token is not true, or the password has expired then the schema won't return any user
+    if(!user){
+        return next(new AppError('Token is invalid or has expired', 400))
+    }
+    // ##if we passed the condition above then we indeed have the user's password and we can re-assign it 
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    // ##let's delete the reset token and the expiry data
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    // ## save the modification
+    await user.save();
+
+
+    // 3) Update changedPasswordAt property for the user
+
+    // 4) Log the user in, send JWT
+    createSendToken(user, 200, res);
+
+})
+
+//updating the logged in user's password without needing to forget it in the first place
+exports.updatePassword = catchAsync(async(req, res, next) => {
+    // 1) Get user from collection
+    //this is coming from the protect middleware
+    console.log('we are checking the current password: step 1')
+
+    const user = await User.findById(req.user.id).select('+password');
+
+    // 2) Check if POSTed current password is correct
+    if(!(await user.correctPassword(req.body.passwordCurrent, user.password))){
+        return next(new AppError('Your current password is wrong, please try again!!', 401))
+    }
+
+    console.log('we are checking the current password: step 2')
+    
+    // 3) if so, update user
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save();
+    
+    console.log('we are checking the current password: step 3')
+    // 4) Log user in, send JWT
+    createSendToken(user, 200, res);
+});
+
+
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
 /**
  * 200: OK
 201: Created

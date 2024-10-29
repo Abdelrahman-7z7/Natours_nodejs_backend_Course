@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 node_modules/
 config.env
+=======
+config.env
+node_modules/
+>>>>>>> 97b4600 (Impelementing forgot reset update password functionalities)
