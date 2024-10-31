@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan')
+const rateLimit = require('express-rate-limit')
 
 const gloablErrorHandler = require('./controller/errorController')
 const AppError = require('./utils/appError')
@@ -9,11 +10,42 @@ const userRouter = require('./routes/userRoutes')
 
 const app = express();
 
-//1) MIDDLEWARES
+//1) GLOBAL MIDDLEWARES
 //check whether we are running in the development or in production 
 if(process.env.NODE_ENV.trim() === 'development'){
     app.use(morgan('dev'))
 }
+
+
+/**For my coming application:
+ * // High-frequency limit for general browsing (e.g., viewing posts)
+const generalLimiter = rateLimit({
+    max: 500, // allow 500 requests per hour per IP
+    windowMs: 60 * 60 * 1000, // 1 hour
+    message: "Too many requests from this IP, please try again later."
+    });
+    
+    // Stricter limit for write actions (e.g., creating comments or posts)
+    const writeLimiter = rateLimit({
+        max: 20, // allow 20 requests per hour per IP
+        windowMs: 60 * 60 * 1000, // 1 hour
+        message: "Too many requests for posting actions. Please wait an hour."
+        });
+        */
+       
+//Implementing a global middle ware for rate limiting (counting the requests coming from one id and when it cross the limit we will block it )
+// preventing denial-of-service from brutal attack
+// ## 1) create limiter
+const limiter = rateLimit({
+    //adjust the limit here to suit your applications requests and the time as well 
+    max: 100, // down to 3 for testing  // 429 TOO MANY REQUEST
+    windowMs: 60 * 60 * 1000, // 1 hour 
+    message: "Too many request from this IP, please try again in an hour!"
+})
+
+//this will basically apply the changes for any request coming from a route that starts with "/api" 
+app.use('/api', limiter);
+
 
 // Middleware: a function that runs before the handler function. // so we need this for the request in the body 
 app.use(express.json());
@@ -31,6 +63,7 @@ app.use((err, req, res, next) => {
     }
     next();
 });
+
 
 //a middleware 
 // ##since we didnt specify any route that will be applied to all routes after this middleware (the place change a lot)

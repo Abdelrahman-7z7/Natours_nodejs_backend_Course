@@ -14,6 +14,7 @@ router.post('/forgotPassword', authController.forgetPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
 router.patch('/updateMe', authController.protect, userController.updateMe)
+router.delete('/deleteMe', authController.protect, userController.deleteMe)
 
 //this route will only work for the logged in user and the protect middleware will put the user's info in the next parameter
 router.patch('/updateMyPassword', authController.protect, authController.updatePassword);
