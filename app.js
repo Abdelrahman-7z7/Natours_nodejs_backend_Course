@@ -1,6 +1,10 @@
 const express = require('express');
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const xss = require('xss-clean')
+const hpp = require('hpp')
 
 const gloablErrorHandler = require('./controller/errorController')
 const AppError = require('./utils/appError')
@@ -11,6 +15,11 @@ const userRouter = require('./routes/userRoutes')
 const app = express();
 
 //1) GLOBAL MIDDLEWARES
+
+//set security http headers
+app.use(helmet())
+
+//development logging 
 //check whether we are running in the development or in production 
 if(process.env.NODE_ENV.trim() === 'development'){
     app.use(morgan('dev'))
@@ -48,7 +57,34 @@ app.use('/api', limiter);
 
 
 // Middleware: a function that runs before the handler function. // so we need this for the request in the body 
-app.use(express.json());
+//Body parser, reading data from body into req.body
+//set a limit for not accepting a body that exceed 10kb
+app.use(express.json({limit: '10kb'}));
+ 
+// ## using the next to package after fetching the data in req.body by the express.json
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS (cross-site scripting attack)
+//preventing from malicious HTML code with some JS code attached to it
+app.use(xss())
+
+//preventing parameter pollution
+//clean up the query string ==> {{URL}}api/v1/tours?sort=duration&sort=price // we cant have a duplicated parameter  
+//we can add whitelist for some parameter
+app.use(hpp({
+    whitelist: [
+        'duration',
+        'ratingsAverage',
+        'ratingsQuantity',
+        'maxGroupSize',
+        'difficulty',
+        'price',
+    ]
+}));
+
+// Serving static files
 //accessing the overview.html and that can be done with the next line but in the URL we dont use the /public (express will sit it to the root "/" url) instead we use
 // 127.0.0.1:3000/overview.html
 app.use(express.static(`${__dirname}/public`))
@@ -73,6 +109,7 @@ app.use((err, req, res, next) => {
 //     next();
 // })
 
+//test middleware 
 //adding a middleware to know when the request has happened and this will be applied to the next routes only no the one create before this middleware got created
 app.use((req,res,next)=>{
     req.requestTime = new Date().toISOString();
