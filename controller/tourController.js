@@ -53,6 +53,14 @@ exports.getAllTours = catchAsync(async (req, res, next) =>{
 
 exports.getTourById = catchAsync( async (req,res,next) =>{
     //tour.findOne({_id: req.params.id })
+    //adding the populate tour guide as a child referencing for the user-id
+    //adding an object for implementing some options (populate)
+    //moving to a middleware for a best practice where we have it before every find query
+    // const tour = await Tour.findById(req.params.id).populate({
+    //     path: 'guides',
+    //     select: '-__v -passwordChangedAt -passwordResetExpires -passwordResetToken'
+    // });
+
     const tour = await Tour.findById(req.params.id)
 
     if(!tour){
