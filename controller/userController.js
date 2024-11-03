@@ -1,5 +1,6 @@
 const User = require('../models/userModel')
 const catchAsync = require('../utils/catchAsync')
+const factory = require('./handlerFactory')
 
 const filterObj = (obj, ...allowedFields) => {
     const newObj = {};
@@ -9,23 +10,11 @@ const filterObj = (obj, ...allowedFields) => {
             newObj[key] = obj[key]
         }
     })
-
+    
     return newObj;
 }
 
 //ROUTER HANDLER
-exports.getAllUsers = catchAsync( async(req, res)=>{
-    const users = await User.find()
-
-    //SEND RESPONSE
-    res.status(200).json({
-        status: 'success',
-        results: users.length,
-        data: {
-            users
-        }
-    })
-});
 
 //currant User update its own data
 exports.updateMe = catchAsync(async (req, res, next) => {
@@ -51,6 +40,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     })
 });
 
+
+
 exports.deleteMe = catchAsync(async (req, res, next) => {
     await User.findByIdAndUpdate(req.user.id, {active: false})
 
@@ -63,24 +54,27 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 exports.createNewUser = (req, res)=>{
     res.status(500).json({
         status: 'fail',
-        message: 'Server Error - this route is not yet defined (create)'
+        message: 'Server Error - this route will not be defined. PLEASE! use /signup instead'
     })
 }
-exports.getUserById = (req, res)=>{
-    res.status(500).json({
-        status: 'fail',
-        message: 'Server Error - this route is not yet defined (getById)'
-    })
-}
-exports.updateUser = (req, res)=>{
-    res.status(500).json({
-        status: 'fail',
-        message: 'Server Error - this route is not yet defined (update)'
-    })
-}
-exports.deleteUser = (req, res)=>{
-    res.status(500).json({
-        status: 'fail',
-        message: 'Server Error - this route is not yet defined (delete)'
-    })
-}
+
+
+exports.getAllUsers = factory.getAll(User);
+exports.getUserById = factory.getOne(User);
+//Do not update passwords with this function
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);
+
+
+// exports.getAllUsers = catchAsync( async(req, res)=>{
+//     const users = await User.find()
+
+//     //SEND RESPONSE
+//     res.status(200).json({
+//         status: 'success',
+//         results: users.length,
+//         data: {
+//             users
+//         }
+//     })
+// });

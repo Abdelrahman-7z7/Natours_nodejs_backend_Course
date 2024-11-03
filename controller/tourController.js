@@ -1,8 +1,9 @@
-const fs = require('fs');
 const Tour = require('../models/tourModel')
-const APIFeatures = require('../utils/apiFeatures')
 const catchAsync = require('../utils/catchAsync');
-const appError = require('../utils/appError');
+const factory = require('./handlerFactory');
+// const fs = require('fs');
+// const APIFeatures = require('../utils/apiFeatures')
+// const appError = require('../utils/appError');
 
 //Middleware
 exports.aliasTopTours = (req, res, next) => {
@@ -14,143 +15,14 @@ exports.aliasTopTours = (req, res, next) => {
 }
 
 
+//TODO: 2) TOURS ROUTES HANDLER (powered by handler factory)
+exports.getAllTours = factory.getAll(Tour);
+exports.getTourById = factory.getOne(Tour, {path: 'reviews'});
+exports.createTour = factory.createOne(Tour);
+exports.updateTour = factory.updateOne(Tour);
+exports.deleteTour = factory.deleteOne(Tour);
 
 
-//TODO: 2) TOURS ROUTES HANDLER
-exports.getAllTours = catchAsync(async (req, res, next) =>{
-
-    //  ##TWO WAYS OF OBTAINING THE QUERYS 
-    
-    // const tours = await Tour.find({
-    //     duration: 5,
-    //     difficulty:'easy'
-    // })
-    
-    // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy')
-    
-    // ## EXECUTE QUERY
-    const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().pagination(); 
-
-    const tours = await features.query;
-
-    res.status(200).json({
-        status: 'success',
-        result: tours.length,
-        data: {
-            tours
-        }
-    })
-
-    // try{
-        
-    // } catch (err){
-    //     res.status(400).json({
-    //         status: 'fail',
-    //         message: err.message
-    //     })
-    // }
-});
-
-exports.getTourById = catchAsync( async (req,res,next) =>{
-    //tour.findOne({_id: req.params.id })
-    //adding the populate tour guide as a child referencing for the user-id
-    //adding an object for implementing some options (populate)
-    //moving to a middleware for a best practice where we have it before every find query
-    // const tour = await Tour.findById(req.params.id).populate({
-    //     path: 'guides',
-    //     select: '-__v -passwordChangedAt -passwordResetExpires -passwordResetToken'
-    // });
-
-    const tour = await Tour.findById(req.params.id).populate('reviews')
-
-    if(!tour){
-        return next(new appError('No tour found with that ID', 404))
-    }
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour
-        }
-    })
-    // try{
-    // }catch (err){
-    //     res.status(404).json({
-    //         status: 'fail',
-    //         message: `No tour found with id ${req.params.id}`
-    //     })
-    // }
-});
-
-exports.createTour = catchAsync(async (req,res,next)=>{
-    //In async/await logic we need to handle errors using try/catch
-    //both next line can do the same thing but one is simpler than the other and both does return a promise
-    // const newTour = new Tour({})
-    // newTour.save()        
-
-    const newTour = await Tour.create(req.body)
-
-    res.status(201).json({
-        status:'success',
-        data: {
-            tour: newTour
-        }
-    })
-
-    // try{
-    // }catch (err) {
-    //     res.status(400).json({
-    //         status: 'fail',
-    //         message: err.message
-    //     })
-    // }
-});
-
-exports.updateTour = catchAsync(async (req,res,next)=>{
-    //new: true ==> means that we want this method to return a new document 
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-    })
-
-    if(!tour){
-        return next(new appError('No tour found with that ID', 404))
-    }
-
-    res.status(200).json({
-        status: "success",
-        data: {
-            tour
-        }
-    })
-    // try{
-    // }catch (err){
-    //     res.status(400).json({
-    //         status: 'fail',
-    //         message: err.message
-    //     })
-    // }
-});
-
-exports.deleteTour = catchAsync(async (req,res,next)=>{
-    const tour = await Tour.findByIdAndDelete(req.params.id);
-
-    if(!tour){
-        return next(new appError('No tour found with that ID', 404))
-    }
-
-    res.status(204).json({
-        status: 'success',
-        data: null
-    })
-    // try{
-    // }catch (err){
-    //     res.status(400).json({
-    //         status: 'fail',
-    //         message: err.message
-    //     })
-    // }
-});
 
 //aggregation pipeline (get tour statistic)
 exports.getTourStats = catchAsync(async (req, res,next) => {
@@ -256,7 +128,148 @@ exports.getMonthlyPlan = catchAsync(async (req,res,next) => {
     // }
 })
 
+//-------------------------------------------------------------------------------------------//
 
+
+// ###### THE CONTROLLER BEFORE handler factory #######
+
+// exports.getAllTours = catchAsync(async (req, res, next) =>{
+
+//     //  ##TWO WAYS OF OBTAINING THE QUERYS 
+    
+//     // const tours = await Tour.find({
+//     //     duration: 5,
+//     //     difficulty:'easy'
+//     // })
+    
+//     // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy')
+    
+//     // ## EXECUTE QUERY
+//     const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().pagination(); 
+
+//     const tours = await features.query;
+
+//     res.status(200).json({
+//         status: 'success',
+//         result: tours.length,
+//         data: {
+//             tours
+//         }
+//     })
+
+//     // try{
+        
+//     // } catch (err){
+//     //     res.status(400).json({
+//     //         status: 'fail',
+//     //         message: err.message
+//     //     })
+//     // }
+// });
+
+
+// exports.getTourById = catchAsync( async (req,res,next) =>{
+//     //tour.findOne({_id: req.params.id })
+//     //adding the populate tour guide as a child referencing for the user-id
+//     //adding an object for implementing some options (populate)
+//     //moving to a middleware for a best practice where we have it before every find query
+//     // const tour = await Tour.findById(req.params.id).populate({
+//     //     path: 'guides',
+//     //     select: '-__v -passwordChangedAt -passwordResetExpires -passwordResetToken'
+//     // });
+
+//     const tour = await Tour.findById(req.params.id).populate('reviews')
+
+//     if(!tour){
+//         return next(new appError('No tour found with that ID', 404))
+//     }
+
+//     res.status(200).json({
+//         status: 'success',
+//         data: {
+//             tour
+//         }
+//     })
+//     // try{
+//     // }catch (err){
+//     //     res.status(404).json({
+//     //         status: 'fail',
+//     //         message: `No tour found with id ${req.params.id}`
+//     //     })
+//     // }
+// });
+
+// exports.createTour = catchAsync(async (req,res,next)=>{
+//     //In async/await logic we need to handle errors using try/catch
+//     //both next line can do the same thing but one is simpler than the other and both does return a promise
+//     // const newTour = new Tour({})
+//     // newTour.save()        
+
+//     const newTour = await Tour.create(req.body)
+
+//     res.status(201).json({
+//         status:'success',
+//         data: {
+//             tour: newTour
+//         }
+//     })
+
+//     // try{
+//     // }catch (err) {
+//     //     res.status(400).json({
+//     //         status: 'fail',
+//     //         message: err.message
+//     //     })
+//     // }
+// });
+
+// exports.updateTour = catchAsync(async (req,res,next)=>{
+//     //new: true ==> means that we want this method to return a new document 
+//     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//         new: true,
+//         runValidators: true
+//     })
+
+//     if(!tour){
+//         return next(new appError('No tour found with that ID', 404))
+//     }
+
+//     res.status(200).json({
+//         status: "success",
+//         data: {
+//             tour
+//         }
+//     })
+//     // try{
+//     // }catch (err){
+//     //     res.status(400).json({
+//     //         status: 'fail',
+//     //         message: err.message
+//     //     })
+//     // }
+// });
+
+// exports.deleteTour = catchAsync(async (req,res,next)=>{
+//     const tour = await Tour.findByIdAndDelete(req.params.id);
+
+//     if(!tour){
+//         return next(new appError('No tour found with that ID', 404))
+//     }
+
+//     res.status(204).json({
+//         status: 'success',
+//         data: null
+//     })
+//     // try{
+//     // }catch (err){
+//     //     res.status(400).json({
+//     //         status: 'fail',
+//     //         message: err.message
+//     //     })
+//     // }
+// });
+
+//-------------------------------------------------------------------------------------------//
 
 // ###### THE CONTROLLER USING JSON FILE (NOT DATABASE) #######
 

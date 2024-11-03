@@ -19,8 +19,16 @@ router.delete('/deleteMe', authController.protect, userController.deleteMe)
 //this route will only work for the logged in user and the protect middleware will put the user's info in the next parameter
 router.patch('/updateMyPassword', authController.protect, authController.updatePassword);
 
-router.route('/').get(userController.getAllUsers).post(userController.createNewUser);
-router.route('/:id').get(userController.getUserById).patch(userController.updateUser).delete(userController.deleteUser);
+router
+    .route('/')
+    .get(userController.getAllUsers)
+    .post(userController.createNewUser);
+
+router
+    .route('/:id')
+    .get(userController.getUserById)
+    .patch(userController.updateUser)
+    .delete(userController.deleteUser);
 
 module.exports = router;
 
