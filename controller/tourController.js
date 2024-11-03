@@ -61,7 +61,7 @@ exports.getTourById = catchAsync( async (req,res,next) =>{
     //     select: '-__v -passwordChangedAt -passwordResetExpires -passwordResetToken'
     // });
 
-    const tour = await Tour.findById(req.params.id)
+    const tour = await Tour.findById(req.params.id).populate('reviews')
 
     if(!tour){
         return next(new appError('No tour found with that ID', 404))

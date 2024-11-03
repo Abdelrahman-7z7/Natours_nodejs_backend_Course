@@ -130,6 +130,17 @@ tourSchema.virtual('durationWeeks').get(function(){
     return this.duration/7;
 })
 
+//TODO: virtual populate
+tourSchema.virtual('reviews', {
+    //name of the model
+    ref: 'Review',
+    //the name of the foreign fields which stored in the review model
+    foreignField: 'tour',
+    //where the local id stored in the tour model
+    localField: '_id'    
+})
+
+
 //TODO:Document Middleware: runs before .save() and .create()
 
 //every function in the middleware in mangoose has access to next()
