@@ -1,7 +1,8 @@
 const express = require('express')
 const reviewController = require('../controller/reviewController')
 const authController = require('../controller/authController')
-const router = express.Router()
+//for accessing nested route add mergeParams: true
+const router = express.Router({mergeParams: true})
 
 router
     .route('/')

@@ -22,6 +22,5 @@ router.patch('/updateMyPassword', authController.protect, authController.updateP
 router.route('/').get(userController.getAllUsers).post(userController.createNewUser);
 router.route('/:id').get(userController.getUserById).patch(userController.updateUser).delete(userController.deleteUser);
 
-
 module.exports = router;
 

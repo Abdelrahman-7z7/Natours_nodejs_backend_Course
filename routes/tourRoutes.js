@@ -5,19 +5,36 @@ const authController = require('../controller/authController')
 
 //CONFIG THE CONTROLLER
 const tourController = require('../controller/tourController')
+// const reviewController = require('../controller/reviewController')
+const reviewRouter = require('./reviewRoutes')
 
 //ROUTER
 const router = express.Router();
 
 //PARAM MIDDLEWARE
 // router.param('id', tourController.checkID)
-
 //## this param works for the route that has /:id in it 
 // ex:
 // router.param('id', (req, res, next, val)=>{
 //     console.log(`Tour id is ${val}`)
 //     next();
 // })
+
+//TODO: nested route
+// POST: /tour/tourID"4abd6464ds"/reviews and the user will come from the current logged in user info 
+// GET: /tour/tourID"4abd6464ds"/reviews
+// GET: /tour/tourID"4abd6464ds"/reviews/reviewId"4as2546fd"
+
+// router
+//     .route("/:tourId/reviews")
+//     .post(
+//         authController.protect,
+//         authController.restrictTo('user'),
+//         reviewController.createReview
+//     )
+//from here heading to reviewController to fetch the current user and tour's id 
+router.use('/:tourId/reviews', reviewRouter)
+
 
 router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours)
 
@@ -44,6 +61,8 @@ router.route('/:id')
 .get(tourController.getTourById)
 .patch(tourController.updateTour)
 .delete(authController.protect, authController.restrictTo('admin', 'lead-guide'),tourController.deleteTour);
+
+
 
 
 module.exports = router;
