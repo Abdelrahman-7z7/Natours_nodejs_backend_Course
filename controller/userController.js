@@ -14,9 +14,19 @@ const filterObj = (obj, ...allowedFields) => {
     return newObj;
 }
 
+//Middleware to get the information of the current user
+exports.getMe = (req, res, next) => {
+    //from the getOne handler factory
+    req.params.id = req.user.id;
+    
+    next()
+}
+
 //ROUTER HANDLER
 
 //currant User update its own data
+
+
 exports.updateMe = catchAsync(async (req, res, next) => {
     // 1) Create error if user POSTs(update) password data
     if(req.body.password || req.body.passwordConfirm){
