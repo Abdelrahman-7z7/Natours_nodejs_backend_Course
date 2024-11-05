@@ -82,6 +82,10 @@ reviewSchema.statics.calcAverageRatings = async function(tourId){
 
 }  
 
+//applying the combination uniqueness between tour and user where only one tour can have only one review from a certain user
+//can be solved by index()
+reviewSchema.index({tour: 1, user: 1}, {unique: true})
+
 //we will create the previous statics method after every creation of a review to be counted in the avg
 //post save Middleware // post middleware has no access to next()
 reviewSchema.post('save', function(){
