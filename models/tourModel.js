@@ -32,7 +32,7 @@ const tourSchema = new mongoose.Schema({
             message: 'Difficulty is either: easy, medium, difficult'
         }
     }, 
-    ratingAverage: {
+    ratingsAverage: {
          type: Number,
          default: 4.5,
          min: [1, 'Rating must be above 1.0'],
@@ -124,6 +124,12 @@ const tourSchema = new mongoose.Schema({
     toJSON: {virtuals: true}, 
     toObject: {virtuals: true}, 
 });
+
+//improving the read performance
+//1 => ascending / -1 => descending  
+// tourSchema.index({price: 1})
+tourSchema.index({price: 1, ratingsAverage: -1})
+tourSchema.index({slug: 1})
 
 //we used function() NOT ()=> "arrow function" because arrow function does not have the "this" keyword 
 tourSchema.virtual('durationWeeks').get(function(){

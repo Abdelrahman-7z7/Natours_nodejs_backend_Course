@@ -1,7 +1,9 @@
 const fs = require('fs')
-const Tour = require('./models/tourModel')
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+const Tour = require('./models/tourModel')
+const User = require('./models/userModel')
+const Review = require('./models/reviewModel')
 
 dotenv.config({ path: './config.env' });
 
@@ -16,11 +18,15 @@ mongoose.connect(DB).then(
 
 //READ the file 
 const tours = JSON.parse(fs.readFileSync('../starter/dev-data/data/tours.json', 'utf-8'));
+const users = JSON.parse(fs.readFileSync('../starter/dev-data/data/users.json', 'utf-8'));
+const reviews = JSON.parse(fs.readFileSync('../starter/dev-data/data/reviews.json', 'utf-8'));
 
 //IMPORTING data into database 
 const importData = async () =>{
      try{
           await Tour.create(tours)
+          await User.create(users, {validateBeforeSave: false})
+          await Review.create(reviews)
           console.log('Data successfully loaded!')
      }catch(err){
           console.log(err)
