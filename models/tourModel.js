@@ -132,6 +132,9 @@ const tourSchema = new mongoose.Schema({
 tourSchema.index({price: 1, ratingsAverage: -1})
 tourSchema.index({slug: 1})
 
+//we need to attribute an index to the field where the geo-spatial data that is being searched for
+tourSchema.index({startLocation: '2dsphere' })  // 2-dimension sphere 
+
 //we used function() NOT ()=> "arrow function" because arrow function does not have the "this" keyword 
 tourSchema.virtual('durationWeeks').get(function(){
     return this.duration/7;

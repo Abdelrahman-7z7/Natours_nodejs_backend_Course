@@ -52,6 +52,13 @@ router
 // app.post('/api/v1/tours', createTour);
 // a better way to make one route holds two type of http method
 
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin)
+//using query
+// /tours-within?distance=233&center=40,45&unit=mi
+//instead we are gonna use it like this
+// /tours-within/233/center/-40,45/unit/mi
+
+
 //adding a middleware Checkbody to the post request
 router.route('/')
     .get(
