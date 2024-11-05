@@ -217,13 +217,13 @@ tourSchema.pre(/^find/, function(next){
 
 //TODO: AGGREGATION MIDDLEWARE
 //"this" in here is actual  NOT HOLDING THE QUERY NEITHER DOCUMENT is actually holding aggregation method
-tourSchema.pre('aggregate', function(next){
-    this.pipeline().unshift({
-        $match: {secretTour: {$ne: true}}
-    })
-    // console.log(this)
-    next()
-})
+// tourSchema.pre('aggregate', function(next){
+//     this.pipeline().unshift({
+//         $match: {secretTour: {$ne: true}}
+//     })
+//     // console.log(this)
+//     next()
+// })
 
 // A MODAL FOR THE MONGOOSE SCHEMA
 const Tour = mongoose.model('Tour', tourSchema);

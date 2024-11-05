@@ -52,7 +52,12 @@ router
 // app.post('/api/v1/tours', createTour);
 // a better way to make one route holds two type of http method
 
+//finding tour within a radius throughout geo-spatial
 router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin)
+
+//finding distances throughout geo-spatial aggregation
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 //using query
 // /tours-within?distance=233&center=40,45&unit=mi
 //instead we are gonna use it like this
