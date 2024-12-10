@@ -1,19 +1,34 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan')
+//security imports
 const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
 const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean')
 const hpp = require('hpp')
 
+//error handling
 const gloablErrorHandler = require('./controller/errorController')
 const AppError = require('./utils/appError')
+
 //CONFIG THE ROUTES
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const reviewRouter = require('./routes/reviewRoutes')
 
+//enable cors
 const app = express();
+
+// setting Pug template //defined a new engine
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'))
+
+
+// Serving static files
+//accessing the overview.html and that can be done with the next line but in the URL we dont use the /public (express will sit it to the root "/" url) instead we use
+// 127.0.0.1:3000/overview.html
+app.use(express.static(path.join(__dirname, 'public')))
 
 //1) GLOBAL MIDDLEWARES
 
@@ -85,10 +100,6 @@ app.use(hpp({
     ]
 }));
 
-// Serving static files
-//accessing the overview.html and that can be done with the next line but in the URL we dont use the /public (express will sit it to the root "/" url) instead we use
-// 127.0.0.1:3000/overview.html
-app.use(express.static(`${__dirname}/public`))
 
 
 app.use((err, req, res, next) => {
@@ -124,7 +135,29 @@ app.use((req,res,next)=>{
 //TODO: 2) USER ROUTE HANDLER ==> moved to routes folder 
 
 
-// 3) ROUTES
+// 3) ROUTES>
+app.get('/', (req, res) => {
+    res.status(200).render('base', {
+        tour: 'The Forest Hiker',
+        user: 'Jonson',
+        
+    });
+})
+
+app.get('/overview', (req, res) => {
+    res.status(200).render('overview', {
+        title: 'All Tours'
+    })
+})
+
+app.get('/tour', (req, res) => {
+    res.status(200).render('overview', {
+        title: 'All Tours'
+    })
+})
+
+
+
 app.use('/api/v1/tours', tourRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/reviews', reviewRouter)

@@ -1,0 +1,28 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        meta(name='viewport' content='width=device-width, initial-scale=1.0')
+        //- title Natours #{tour}
+        title Natours | Exciting tours for adventurous people 
+        link(rel='stylesheet', href='css/style.css')
+        link(rel='shortcut icon', type='image/png', href='img/favicon.png')
+        link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Lato:300,300i,700')
+
+    body
+        //- h1= tour
+        //- //- h1 The Park Camper
+        //- h2= user.toUpperCase()
+        //- //- buffered code
+        //- - const x = 9
+        //- h2= x * 2
+        //- p this is just some text
+        // header
+        include _header
+        
+        // content
+        section.overview
+            h1= tour 
+
+        //FOOTER
+        include _footer

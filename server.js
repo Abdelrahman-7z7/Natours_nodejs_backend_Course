@@ -43,6 +43,7 @@ mongoose.connect(DB).then(
 // it is a variable that's kind of a convention which should define whether we are in the development or on production mode
 // console.log(app.get('env'))
 // console.log(process.env)
+
 const port = process.env.PORT || 3000;
 const server = app.listen(port, ()=>{
      console.log(`app running on ${port}`)

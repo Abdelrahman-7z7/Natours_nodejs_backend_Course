@@ -66,6 +66,7 @@ userSchema.pre('save', async function(next){
      
     // Hash the password with cost of 12 (CPU intensive) and replace the plain text password with the hashed one
     this.password = await bcrypt.hash(this.password, 12)
+
     // deleting the password confirm, we just needed for the validation above 
     this.passwordConfirm = undefined;
     next();

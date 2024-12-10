@@ -12,9 +12,9 @@ const handleCastErrorDB = err => {
 // "errmsg": "E11000 duplicate key error collection: natours.tours index: name_1 dup key: { name: \"The Forest Hiker\" }",
 const handleDuplicateFieldsDB = err => {
     
-    //obtained for stackOverFlow
+    //obtained form stackOverFlow
     const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-    console.log(value);
+    // console.log(value);
     const message = `Duplicate field value: ${value}. Please use another value!`
     return new AppError(message, 400)
 }
@@ -90,10 +90,12 @@ module.exports = (err, req, res, next)=>{
 
         error.name = err.name; // Manually copy the name property
         error.message = err.message; // Manually copy the message property
+        error.errmsg = err.errmsg;
+        
+        //handling data type miss matching
         if(error.name === 'CastError') error = handleCastErrorDB(error);
 
         //handling duplicated fields
-        error.errmsg = err.errmsg;
         if(error.code === 11000 ) error = handleDuplicateFieldsDB(error);
 
         //handling the validation error 

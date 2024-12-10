@@ -8,7 +8,9 @@ const sendEmail = require('../utils/email')
 const crypto = require('crypto')
 
 const signToken = id => {
-    return jwt.sign({id}, process.env.JWT_SECRET, {
+    return jwt.sign(
+        {id},
+        process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN
     });
 }
@@ -104,18 +106,11 @@ exports.protect = catchAsync( async(req, res, next)=>{
     //checking if the token is there
     // console.log(token)
 
-    if(!token){
-        return next(new AppError('You are not logged in! Please login to get access!!', 401))
-    }
-
-
     // 2) verification token
-
-    
     if(!token){
         return next(new AppError('You are not logged in! Please login to get access!!', 401))
     }
-    
+        
     
     // 2) verification token
     
@@ -205,7 +200,7 @@ exports.forgetPassword = catchAsync(async(req, res, next) => {
     }
 })
 
-exports.resetPassword =catchAsync(async(req, res, next) =>{
+exports.resetPassword = catchAsync(async(req, res, next) =>{
     // 1) Get user based on the token
     const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex')
 
@@ -241,7 +236,7 @@ exports.resetPassword =catchAsync(async(req, res, next) =>{
 exports.updatePassword = catchAsync(async(req, res, next) => {
     // 1) Get user from collection
     //this is coming from the protect middleware
-    console.log('we are checking the current password: step 1')
+    // console.log('we are checking the current password: step 1')
 
     const user = await User.findById(req.user.id).select('+password');
 
@@ -250,14 +245,14 @@ exports.updatePassword = catchAsync(async(req, res, next) => {
         return next(new AppError('Your current password is wrong, please try again!!', 401))
     }
 
-    console.log('we are checking the current password: step 2')
+    // console.log('we are checking the current password: step 2')
     
     // 3) if so, update user
     user.password = req.body.password;
     user.passwordConfirm = req.body.passwordConfirm;
     await user.save();
     
-    console.log('we are checking the current password: step 3')
+    // console.log('we are checking the current password: step 3')
     // 4) Log user in, send JWT
     createSendToken(user, 200, res);
 });
